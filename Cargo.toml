@@ -1,9 +1,12 @@
 [package]
-name = "maha"
-version = "0.1.0"
 authors = ["Tuhin Nair <tuhinnair444@gmail.com>"]
 edition = "2018"
+name = "maha"
+version = "0.1.0"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+chrono = "0.4.19"
+clap = "2.33.3"
+yahoo_finance_api = {version = "1.1.5", features = ["blocking"]}
