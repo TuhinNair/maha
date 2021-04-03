@@ -2,10 +2,13 @@ use chrono::{DateTime, Utc};
 use std::fmt;
 use std::{error::Error, fmt::Display};
 
-type OracleResult<T> = Result<T, OracleError>;
+mod yahoo;
+pub use yahoo::Yahoo;
+
+pub type OracleResult<T> = Result<T, OracleError>;
 #[derive(Debug)]
-struct OracleError {
-    message: String,
+pub struct OracleError {
+    pub message: String,
 }
 
 impl Display for OracleError {
@@ -16,19 +19,21 @@ impl Display for OracleError {
 
 impl Error for OracleError {}
 
-struct OHLC {
+#[derive(Debug)]
+pub struct OHLC {
     utc_datetime: DateTime<Utc>,
     open: f64,
     high: f64,
     low: f64,
     adjclose: f64,
 }
-trait Oracle {
+pub trait Oracle {
     fn new_oracle() -> Self;
 
     fn ohlc_inclusive_range(
+        &self,
         ticker: &str,
         start: DateTime<Utc>,
         end: DateTime<Utc>,
-    ) -> Result<Vec<Option<OHLC>>, OracleError>;
+    ) -> OracleResult<Vec<OHLC>>;
 }
