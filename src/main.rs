@@ -1,10 +1,9 @@
+use app::{App, Input};
 use chrono::{DateTime, Utc};
-
-mod oracle;
 use oracle::{Oracle, OracleResult, Yahoo, OHLC};
 
 mod app;
-use app::{App, Input, InputError};
+mod oracle;
 
 fn main() {
     let app = App::new();

@@ -1,9 +1,9 @@
 use chrono::{DateTime, Utc};
 use std::fmt;
 use std::{error::Error, fmt::Display};
+pub use yahoo::{Yahoo, YahooError};
 
 mod yahoo;
-pub use yahoo::{Yahoo, YahooError};
 
 pub type OracleResult<T> = Result<T, OracleError>;
 #[derive(Debug)]
