@@ -1,84 +1,23 @@
-use clap::value_t;
-#[macro_use]
-use clap::{App, Arg, SubCommand, ArgMatches};
-use chrono::{DateTime, NaiveDate, TimeZone, Utc};
+use chrono::{DateTime, Utc};
 
 mod oracle;
 use oracle::{Oracle, OracleResult, Yahoo, OHLC};
 
-fn app() -> ArgMatches<'static> {
-    App::new("maha")
-        .author("Tuhin Nair")
-        .arg(
-            Arg::with_name("ticker")
-                .short("t")
-                .long("ticker")
-                .value_name("TICKER")
-                .help("The ticker symbol representing a stock")
-                .takes_value(true),
-        )
-        .arg(
-            Arg::with_name("start_date")
-                .short("s")
-                .long("start")
-                .value_name("START")
-                .help("The inclusive start date of the expected range of data (Format: YYYY-MM-DD)")
-                .takes_value(true),
-        )
-        .arg(
-            Arg::with_name("end_date")
-                .short("e")
-                .long("end")
-                .value_name("END")
-                .help("The inclusive end date of the expected range of data. (Format: YYYY-MM-DD)")
-                .takes_value(true),
-        )
-        .get_matches()
-}
+mod app;
+use app::{App, Input, InputError};
 
 fn main() {
-    let matches = app();
+    let app = App::new();
+    let input = app.input();
 
-    let ticker: &str;
-    if let Some(t) = matches.value_of("ticker") {
-        ticker = t;
-    } else {
-        println!("{}", matches.usage());
-        return;
-    }
+    match input {
+        Ok(i) => process_input(i),
+        Err(e) => app.print_help(Some(e)),
+    };
+}
 
-    let start: DateTime<Utc>;
-    if let Some(s) = matches.value_of("start_date") {
-        match NaiveDate::parse_from_str(s, "%Y-%m-%d") {
-            Ok(sd) => {
-                start = DateTime::<Utc>::from_utc(sd.and_hms_milli(0, 0, 0, 0), Utc);
-            }
-            Err(e) => {
-                println!("{}\n{}", e, matches.usage());
-                return;
-            }
-        }
-    } else {
-        println!("{}", matches.usage());
-        return;
-    }
-
-    let end: DateTime<Utc>;
-    if let Some(e) = matches.value_of("end_date") {
-        match NaiveDate::parse_from_str(e, "%Y-%m-%d") {
-            Ok(ed) => {
-                end = DateTime::<Utc>::from_utc(ed.and_hms_milli(0, 0, 0, 0), Utc);
-            }
-            Err(e) => {
-                println!("{}\n{}", e, matches.usage());
-                return;
-            }
-        }
-    } else {
-        println!("{}", matches.usage());
-        return;
-    }
-
+fn process_input(input: Input) {
+    let Input { ticker, start, end } = input;
     match fetch(ticker, start, end) {
         Ok(data) => println!("{:?}", data),
         Err(e) => println!("{}", e),
