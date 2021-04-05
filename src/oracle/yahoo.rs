@@ -1,6 +1,7 @@
 use super::{Oracle, OracleError, OracleResult, OHLC};
 use chrono::{DateTime, Utc};
 use std::time::{Duration, UNIX_EPOCH};
+pub use yahoo_finance_api::YahooError;
 use yahoo_finance_api::{Quote, YResponse, YahooConnector};
 
 pub struct Yahoo {
@@ -19,31 +20,19 @@ impl Oracle for Yahoo {
         start: DateTime<Utc>,
         end: DateTime<Utc>,
     ) -> OracleResult<Vec<OHLC>> {
-        let res = self.provider.get_quote_history(ticker, start, end);
-        match res {
-            Ok(data) => self.quotes(data),
-            Err(e) => Err(OracleError {
-                message: format!("{}", e),
-            }),
-        }
+        let raw_response = self.provider.get_quote_history(ticker, start, end)?;
+        self.raw_response_to_ohlc(raw_response)
     }
 }
 
 impl Yahoo {
-    fn quotes(&self, resp: YResponse) -> OracleResult<Vec<OHLC>> {
-        let maybe_quotes = resp.quotes();
-        match maybe_quotes {
-            Ok(quotes) => {
-                let ohlc_data: Vec<OHLC> = quotes
-                    .iter()
-                    .map(|quote| self.quote_to_ohlc(quote))
-                    .collect();
-                Ok(ohlc_data)
-            }
-            Err(e) => Err(OracleError {
-                message: format!("{}", e),
-            }),
-        }
+    fn raw_response_to_ohlc(&self, raw_response: YResponse) -> OracleResult<Vec<OHLC>> {
+        let ohlc_data = raw_response.quotes().map(|q| {
+            q.iter()
+                .map(|quote| self.quote_to_ohlc(quote))
+                .collect::<Vec<OHLC>>()
+        })?;
+        Ok(ohlc_data)
     }
 
     fn quote_to_ohlc(&self, q: &Quote) -> OHLC {

@@ -3,17 +3,25 @@ use std::fmt;
 use std::{error::Error, fmt::Display};
 
 mod yahoo;
-pub use yahoo::Yahoo;
+pub use yahoo::{Yahoo, YahooError};
 
 pub type OracleResult<T> = Result<T, OracleError>;
 #[derive(Debug)]
-pub struct OracleError {
-    pub message: String,
+pub enum OracleError {
+    Yahoo(YahooError),
 }
 
 impl Display for OracleError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", &self.message)
+        match &self {
+            OracleError::Yahoo(er) => write!(f, "Yahoo Error: {}", er),
+        }
+    }
+}
+
+impl From<YahooError> for OracleError {
+    fn from(err: YahooError) -> Self {
+        OracleError::Yahoo(err)
     }
 }
 
