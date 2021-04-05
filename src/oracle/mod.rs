@@ -25,7 +25,13 @@ impl From<YahooError> for OracleError {
     }
 }
 
-impl Error for OracleError {}
+impl Error for OracleError {
+    fn cause(&self) -> Option<&dyn Error> {
+        match self {
+            OracleError::Yahoo(e) => Some(e),
+        }
+    }
+}
 
 #[derive(Debug)]
 pub struct OHLC {

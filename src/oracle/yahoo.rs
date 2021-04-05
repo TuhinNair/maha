@@ -4,6 +4,7 @@ use std::time::{Duration, UNIX_EPOCH};
 pub use yahoo_finance_api::YahooError;
 use yahoo_finance_api::{Quote, YResponse, YahooConnector};
 
+#[derive(Debug)]
 pub struct Yahoo {
     provider: YahooConnector,
 }
