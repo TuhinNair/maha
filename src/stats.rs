@@ -43,7 +43,6 @@ impl Report {
         let min = min(adjclose_series).map(DollarValue::new);
         let max = max(adjclose_series).map(DollarValue::new);
 
-        let diff = price_diff(adjclose_series);
         let (change_percentage, price) = match price_diff(adjclose_series) {
             Some((perc, absolute_diff)) => (
                 Some(format!("{:.2}%", perc)),
@@ -53,7 +52,7 @@ impl Report {
         };
         Report {
             period_start,
-            symbol: symbol.to_owned(),
+            symbol,
             period_length,
             min,
             max,
@@ -68,7 +67,7 @@ pub fn min(series: &[f64]) -> Option<f64> {
     if series.is_empty() {
         return None;
     }
-    let mut min = 0_f64;
+    let mut min = series[0];
     for v in series {
         if *v < min {
             min = *v
@@ -99,7 +98,7 @@ pub fn n_window_sma(n: usize, series: &[f64]) -> Option<Vec<f64>> {
 
     let mut windows: Vec<Vec<f64>> = vec![];
     while data.peek().is_some() {
-        let window: Vec<f64> = data.by_ref().take(n).map(|x| *x).collect();
+        let window: Vec<f64> = data.by_ref().take(n).cloned().collect();
         windows.push(window)
     }
     let window_sma: Vec<f64> = windows

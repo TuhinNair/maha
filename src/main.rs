@@ -1,10 +1,10 @@
-use std::{error::Error, io::Stdout, io::Write};
+use std::io::Write;
 
 use app::{App, Input};
 use chrono::{DateTime, Utc};
-use csv::CSV;
+use csv::{CSVErr, CSV};
 use oracle::{Oracle, OracleResult, Yahoo, OHLC};
-use stats::{DollarValue, Report};
+use stats::Report;
 
 mod app;
 mod csv;
@@ -29,7 +29,9 @@ fn process_input(input: Input) {
             let report = make_report(data);
             let reports = vec![report];
             let mut buffer = std::io::stdout();
-            printCSV(&mut buffer, reports);
+            if let Err(e) = print_csv(&mut buffer, reports) {
+                println!("csv error: {}", e);
+            }
         }
         Err(e) => println!("{}", e),
     };
@@ -40,7 +42,7 @@ fn fetch(ticker: &str, start: DateTime<Utc>, end: DateTime<Utc>) -> OracleResult
     oracle.ohlc_inclusive_range(ticker, start, end)
 }
 
-fn make_report<'a>(data: Vec<OHLC>) -> Report {
+fn make_report(data: Vec<OHLC>) -> Report {
     let datum = data.first().unwrap();
     let period_start = datum.utc_datetime;
     let symbol = datum.symbol.clone();
@@ -48,7 +50,7 @@ fn make_report<'a>(data: Vec<OHLC>) -> Report {
     Report::new(period_start, symbol, &adjclose_series[..])
 }
 
-fn printCSV<T: Write>(buffer: &mut T, reports: Vec<Report>) {
+fn print_csv<T: Write>(buffer: &mut T, reports: Vec<Report>) -> Result<(), CSVErr> {
     let headers: Vec<String> = vec![
         "period_start".to_owned(),
         "symbol".to_owned(),
@@ -89,10 +91,7 @@ fn printCSV<T: Write>(buffer: &mut T, reports: Vec<Report>) {
         })
         .collect::<Vec<Vec<String>>>();
     for report_line in report_lines {
-        csv_report.add_line(report_line);
+        csv_report.add_line(report_line)?;
     }
-    match csv_report.write(&mut std::io::stdout(), ",") {
-        Err(e) => println!("csv report error: {}", e),
-        _ => (),
-    }
+    csv_report.write(buffer, ",")
 }

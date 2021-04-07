@@ -19,7 +19,7 @@ impl<'a> Input<'a> {
             .map_err(|e| InputError::new(format!("start date parse error:\n{}", e)))?;
         let end = Input::parse_date(end)
             .map_err(|e| InputError::new(format!("end date parse error:\n{}", e)))?;
-        Ok(Input { ticker, start, end })
+        Ok(Input::new(ticker, start, end))
     }
 
     fn parse_date(input: &str) -> Result<DateTime<Utc>, ParseError> {

@@ -1,4 +1,4 @@
-use super::{Oracle, OracleError, OracleResult, OHLC};
+use super::{Oracle, OracleResult, OHLC};
 use chrono::{DateTime, Utc};
 use std::time::{Duration, UNIX_EPOCH};
 pub use yahoo_finance_api::YahooError;

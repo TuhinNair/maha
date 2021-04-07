@@ -47,7 +47,7 @@ impl CSV {
     }
 
     pub fn write<T: Write>(&self, buffer: &mut T, delimeter: &str) -> Result<(), CSVErr> {
-        let mut headers = self.headers.clone().join(delimeter);
+        let headers = self.headers.clone().join(delimeter);
         let mut lines = self
             .data
             .clone()

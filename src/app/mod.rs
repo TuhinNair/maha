@@ -58,7 +58,9 @@ impl<'a> App<'a> {
     }
 
     pub fn print_help<T: Display>(&self, maybe_message: Option<T>) {
-        if let Some(msg) = maybe_message { println!("{}\n", msg); }
+        if let Some(msg) = maybe_message {
+            println!("{}\n", msg);
+        }
         self.matches.usage();
     }
 }
