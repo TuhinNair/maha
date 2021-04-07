@@ -18,6 +18,8 @@ impl<'a> App<'a> {
                 .long("ticker")
                 .value_name("TICKER")
                 .help("The ticker symbol representing a stock")
+                .multiple(true)
+                .number_of_values(1)
                 .takes_value(true),
         )
         .arg(
@@ -41,9 +43,10 @@ impl<'a> App<'a> {
     }
 
     pub fn parse_input(&'a self) -> Result<Input, InputError> {
-        let ticker = self
+        let tickers = self
             .matches
-            .value_of("ticker")
+            .values_of("ticker")
+            .map(|vals| vals.collect::<Vec<&str>>())
             .ok_or_else(|| InputError::new("missing ticker sybmol".to_string()))?;
         let start = self
             .matches
@@ -54,7 +57,7 @@ impl<'a> App<'a> {
             .value_of("end_date")
             .ok_or_else(|| InputError::new("missing end date".to_string()))?;
 
-        Input::try_new(ticker, start, end)
+        Input::try_new(tickers, start, end)
     }
 
     pub fn print_help<T: Display>(&self, maybe_message: Option<T>) {

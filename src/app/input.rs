@@ -4,22 +4,26 @@ use std::{error::Error, fmt::Display};
 
 #[derive(Debug)]
 pub struct Input<'a> {
-    pub ticker: &'a str,
+    pub tickers: Vec<&'a str>,
     pub start: DateTime<Utc>,
     pub end: DateTime<Utc>,
 }
 
 impl<'a> Input<'a> {
-    pub fn new(ticker: &'a str, start: DateTime<Utc>, end: DateTime<Utc>) -> Self {
-        Input { ticker, start, end }
+    pub fn new(tickers: Vec<&'a str>, start: DateTime<Utc>, end: DateTime<Utc>) -> Self {
+        Input {
+            tickers,
+            start,
+            end,
+        }
     }
 
-    pub fn try_new(ticker: &'a str, start: &str, end: &str) -> Result<Input<'a>, InputError> {
+    pub fn try_new(tickers: Vec<&'a str>, start: &str, end: &str) -> Result<Input<'a>, InputError> {
         let start = Input::parse_date(start)
             .map_err(|e| InputError::new(format!("start date parse error:\n{}", e)))?;
         let end = Input::parse_date(end)
             .map_err(|e| InputError::new(format!("end date parse error:\n{}", e)))?;
-        Ok(Input::new(ticker, start, end))
+        Ok(Input::new(tickers, start, end))
     }
 
     fn parse_date(input: &str) -> Result<DateTime<Utc>, ParseError> {

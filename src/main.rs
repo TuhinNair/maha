@@ -3,7 +3,7 @@ use std::io::Write;
 use app::{App, Input};
 use chrono::{DateTime, Utc};
 use csv::{CSVErr, CSV};
-use oracle::{Oracle, OracleResult, Yahoo, OHLC};
+use oracle::{Oracle, OracleError, OracleResult, Yahoo, OHLC};
 use stats::Report;
 
 mod app;
@@ -16,25 +16,42 @@ fn main() {
     let input = app.parse_input();
 
     match input {
-        Ok(i) => process_input(i),
-        Err(e) => app.print_help(Some(e)),
+        Ok(i) => match process_input(i) {
+            Ok(reports) => {
+                let mut buffer = std::io::stdout();
+                print_csv(&mut buffer, reports)
+            }
+            Err(e) => {
+                app.print_help(Some(e));
+                Ok(())
+            }
+        },
+        Err(e) => {
+            app.print_help(Some(e));
+            Ok(())
+        }
     };
 }
 
-fn process_input(input: Input) {
-    let Input { ticker, start, end } = input;
+fn process_input(input: Input) -> Result<Vec<Report>, OracleError> {
+    let Input {
+        tickers,
+        start,
+        end,
+    } = input;
 
-    match fetch(ticker, start, end) {
-        Ok(data) => {
-            let report = make_report(data);
-            let reports = vec![report];
-            let mut buffer = std::io::stdout();
-            if let Err(e) = print_csv(&mut buffer, reports) {
-                println!("csv error: {}", e);
-            }
-        }
-        Err(e) => println!("{}", e),
-    };
+    let mut total_data: Vec<Vec<OHLC>> = vec![];
+    for stock in tickers {
+        let stock_data = fetch(stock, start, end)?;
+        total_data.push(stock_data);
+    }
+
+    let reports = total_data
+        .into_iter()
+        .map(make_report)
+        .collect::<Vec<Report>>();
+
+    Ok(reports)
 }
 
 fn fetch(ticker: &str, start: DateTime<Utc>, end: DateTime<Utc>) -> OracleResult<Vec<OHLC>> {
