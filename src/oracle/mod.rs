@@ -6,6 +6,7 @@ pub use yahoo::{Yahoo, YahooError};
 mod yahoo;
 
 pub type OracleResult<T> = Result<T, OracleError>;
+
 #[derive(Debug)]
 pub enum OracleError {
     Yahoo(YahooError),
@@ -35,11 +36,12 @@ impl Error for OracleError {
 
 #[derive(Debug)]
 pub struct OHLC {
-    utc_datetime: DateTime<Utc>,
-    open: f64,
-    high: f64,
-    low: f64,
-    adjclose: f64,
+    pub symbol: String,
+    pub utc_datetime: DateTime<Utc>,
+    pub open: f64,
+    pub high: f64,
+    pub low: f64,
+    pub adjclose: f64,
 }
 pub trait Oracle {
     fn new_oracle() -> Self;
