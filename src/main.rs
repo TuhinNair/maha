@@ -12,7 +12,7 @@ mod oracle;
 mod stats;
 
 fn main() {
-    let app = App::new();
+    let app = App::new(std::env::args());
     let input = app.parse_input();
 
     match input {

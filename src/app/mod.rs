@@ -1,6 +1,6 @@
 use clap::{Arg, ArgMatches};
 pub use input::{Input, InputError};
-use std::fmt::Display;
+use std::{env::Args, fmt::Display};
 
 mod input;
 
@@ -9,7 +9,7 @@ pub struct App<'a> {
 }
 
 impl<'a> App<'a> {
-    pub fn new() -> Self {
+    pub fn new(args: Args) -> Self {
         let matches = clap::App::new("maha")
         .author("Tuhin Nair")
         .arg(
@@ -36,7 +36,7 @@ impl<'a> App<'a> {
                 .help("The inclusive end date of the expected range of data. (Format: YYYY-MM-DD)")
                 .takes_value(true),
         )
-        .get_matches();
+        .get_matches_from(args);
         App { matches }
     }
 
@@ -61,6 +61,6 @@ impl<'a> App<'a> {
         if let Some(msg) = maybe_message {
             println!("{}\n", msg);
         }
-        self.matches.usage();
+        println!("{}", self.matches.usage());
     }
 }
