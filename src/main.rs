@@ -1,6 +1,6 @@
-use std::io::Write;
+use std::{error::Error, io::Write};
 
-use app::{App, Input};
+use app::{App, Input, InputError};
 use chrono::{DateTime, Utc};
 use csv::{CSVErr, CSV};
 use oracle::{Oracle, OracleError, OracleResult, Yahoo, OHLC};
@@ -19,16 +19,17 @@ fn main() {
         Ok(i) => match process_input(i) {
             Ok(reports) => {
                 let mut buffer = std::io::stdout();
-                print_csv(&mut buffer, reports)
+                match print_csv(&mut buffer, reports) {
+                    Ok(()) => (),
+                    Err(e) => app.print_help(Some(e)),
+                }
             }
             Err(e) => {
                 app.print_help(Some(e));
-                Ok(())
             }
         },
         Err(e) => {
             app.print_help(Some(e));
-            Ok(())
         }
     };
 }
